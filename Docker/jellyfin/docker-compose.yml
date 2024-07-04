@@ -7,9 +7,9 @@ services:
     ports:
       - 8096:8096
     volumes:
-      - D:\Docker\jellyfin\config:/config
-      - D:\Docker\jellyfin\cache:/cache
-      - E:\Media:/media:ro
+      - D:/Docker/jellyfin/config:/config
+      - D:/Docker/jellyfin/cache:/cache
+      - E:/Media:/media:ro
     restart: 'unless-stopped'
     runtime: nvidia
     deploy:
