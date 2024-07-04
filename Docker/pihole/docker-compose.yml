@@ -11,8 +11,9 @@ services:
       TZ: 'Europe/Dublin'
       WEBPASSWORD: 'password'
     volumes:
-      - './etc-pihole:/etc/pihole'
-      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+      - D:/Docker/pihole/etc-pihole:/etc/pihole
+      - D:/Docker/pihole/etc-dnsmasq.d:/etc/dnsmasq.d
     cap_add:
       - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
     restart: unless-stopped
+    
