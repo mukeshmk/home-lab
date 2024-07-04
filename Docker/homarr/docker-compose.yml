@@ -10,3 +10,4 @@ services:
       - D:/Docker/homarr/data:/data
     ports:
       - '7575:7575'
+      

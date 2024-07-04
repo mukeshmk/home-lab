@@ -14,3 +14,4 @@ services:
       - D:/Docker/plex/config:/config
       - E:/Media:/media:ro
     restart: unless-stopped
+    

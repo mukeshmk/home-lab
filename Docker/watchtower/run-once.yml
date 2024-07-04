@@ -5,3 +5,4 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock
         image: containrrr/watchtower
         command: --run-once 
+        
