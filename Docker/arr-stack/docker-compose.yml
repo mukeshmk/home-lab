@@ -1,16 +1,17 @@
+name: arr-stack
 services:
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
+    image: lscr.io/linuxserver/qbittorrent:latest
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Dublin
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Dublin}
       - WEBUI_PORT=7044
       - TORRENTING_PORT=6881
     volumes:
-      - D:/Docker/qbittorrent/config:/config
-      - E:/Downloads:/downloads
+      - ${BASE_PATH}/qbittorrent/config:/config
+      - ${DOWNLOADS_PATH}:/downloads
     networks:
       - starr-network
     ports:
@@ -20,13 +21,13 @@ services:
     restart: unless-stopped
 
   flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest
     container_name: flaresolverr
+    image: ghcr.io/flaresolverr/flaresolverr:latest
     environment:
       - LOG_LEVEL=info
       - LOG_HTML=false
       - CAPTCHA_SOLVER=none
-      - TZ=Europe/Dublin
+      - TZ=${TZ:-Europe/Dublin}
     networks:
       - starr-network
     ports:
@@ -37,11 +38,11 @@ services:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Dublin
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Dublin}
     volumes:
-      - D:/Docker/prowlarr/config:/config
+      - ${BASE_PATH}/prowlarr/config:/config
     depends_on:
       flaresolverr:
         condition: service_started
@@ -54,16 +55,16 @@ services:
     restart: unless-stopped
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
+    image: lscr.io/linuxserver/sonarr:latest
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Dublin
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Dublin}
     volumes:
-      - D:/Docker/sonarr/config:/config
-      - "E:/Media/TV Shows:/tv"
-      - E:/Downloads:/downloads
+      - ${BASE_PATH}/sonarr/config:/config
+      - ${DOWNLOADS_PATH}:/downloads
+      - ${TV_PATH}:/tv
     depends_on:
       prowlarr:
         condition: service_started
@@ -74,16 +75,16 @@ services:
     restart: unless-stopped
 
   radarr:
-    image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
+    image: lscr.io/linuxserver/radarr:latest
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Dublin
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Dublin}
     volumes:
-      - D:/Docker/radarr/config:/config
-      - E:/Media/Movies:/movies
-      - E:/Downloads:/downloads
+      - ${BASE_PATH}/radarr/config:/config
+      - ${MOVIES_PATH}:/movies
+      - ${DOWNLOADS_PATH}:/downloads
     depends_on:
       prowlarr:
         condition: service_started
@@ -98,9 +99,9 @@ services:
     container_name: jellyseerr
     environment:
       - LOG_LEVEL=debug
-      - TZ=Europe/Dublin
+      - TZ=${TZ:-Europe/Dublin}
     volumes:
-      - D:/Docker/jellyseerr:/app/config
+      - ${BASE_PATH}/jellyseerr:/app/config
     depends_on:
       radarr:
         condition: service_started

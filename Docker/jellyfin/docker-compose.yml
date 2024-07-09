@@ -1,16 +1,17 @@
+name: jellyfin
 services:
   jellyfin:
-    image: jellyfin/jellyfin:latest
     container_name: jellyfin
+    image: jellyfin/jellyfin:latest
     user: 1000:1000
-    network_mode: 'bridge'
+    network_mode: bridge
     ports:
       - 8096:8096
     volumes:
-      - D:/Docker/jellyfin/config:/config
-      - D:/Docker/jellyfin/cache:/cache
-      - E:/Media:/media:ro
-    restart: 'unless-stopped'
+      - ${BASE_PATH}/jellyfin/config:/config
+      - ${BASE_PATH}/jellyfin/cache:/cache
+      - ${MEDIA_PATH}:/media:ro
+    restart: unless-stopped
     runtime: nvidia
     deploy:
       resources:

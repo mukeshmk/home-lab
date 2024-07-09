@@ -1,13 +1,13 @@
+name: homearr
 services:
   homarr:
     container_name: homarr
     image: ghcr.io/ajnart/homarr:latest
-    restart: unless-stopped
+    ports:
+      - 7575:7575
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - D:/Docker/homarr/configs:/app/data/configs
-      - D:/Docker/homarr/icons:/app/public/icons
-      - D:/Docker/homarr/data:/data
-    ports:
-      - '7575:7575'
-      
+      - ${BASE_PATH}/homarr/configs:/app/data/configs
+      - ${BASE_PATH}/homarr/icons:/app/public/icons
+      - ${BASE_PATH}/homarr/data:/data
+    restart: unless-stopped

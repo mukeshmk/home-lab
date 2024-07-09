@@ -2,15 +2,15 @@ name: homeassistant
 services:
     homeassistant:
         container_name: homeassistant
-        image: "ghcr.io/home-assistant/home-assistant:stable"
+        image: ghcr.io/home-assistant/home-assistant:stable
         privileged: true
-        restart: unless-stopped
-        environment:
-            - TZ=Europe/Dublin
-        volumes:
-            - D:/Docker/homeassistant/config:/config
-            - /run/dbus:/run/dbus:ro
-        network_mode: 'bridge'
+        network_mode: bridge
         ports:
             - 8123:8123
+        environment:
+            - TZ=${TZ:-Europe/Dublin}
+        volumes:
+            - ${BASE_PATH}/homeassistant/config:/config
+            - /run/dbus:/run/dbus:ro
+        restart: unless-stopped
             
