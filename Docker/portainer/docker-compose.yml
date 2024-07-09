@@ -1,7 +1,10 @@
+name: portainer
 services:
   portainer:
     container_name: portainer
     image: portainer/portainer-ce:latest
+    env_file:
+      - D:/Docker/envs/home_lab.env
     ports:
       - 9443:9443
     volumes:
