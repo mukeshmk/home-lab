@@ -112,6 +112,21 @@ services:
     ports:
       - 5055:5055
     restart: unless-stopped
+  
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Dublin}
+    volumes:
+      - ${BASE_PATH}/bazarr/config:/config
+      - ${MOVIES_PATH}:/movies
+      - ${TV_PATH}:/tv
+    ports:
+      - 6767:6767
+    restart: unless-stopped
 
 networks:
   starr-network:
