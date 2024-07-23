@@ -1,0 +1,12 @@
+name: vscode
+services:
+    openvscode-server:
+      image: gitpod/openvscode-server
+      stdin_open: true
+      tty: true
+      init: true
+      ports:
+          - 3333:3000
+      volumes:
+          - ${BASE_PATH}/vscode:/home/workspace:cached
+          - ${BASE_PATH}:/code
