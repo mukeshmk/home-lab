@@ -1,0 +1,74 @@
+name: ai-stack
+services:
+  ollama:
+    container_name: ollama
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - OLLAMA_KEEP_ALIVE=5m
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${BASE_PATH}/ollama:/root/.ollama
+    networks:
+      - aistack-network
+    ports:
+      - 11434:11434
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  open-webui:
+    container_name: open-webui
+    image: ghcr.io/open-webui/open-webui:latest
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - ENABLE_RAG_WEB_SEARCH=True
+      - RAG_WEB_SEARCH_ENGINE=searxng
+      - RAG_WEB_SEARCH_RESULT_COUNT=3
+      - RAG_WEB_SEARCH_CONCURRENT_REQUESTS=10
+      - SEARXNG_QUERY_URL=http://searxng:3080/search?q=<query>
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${BASE_PATH}/open-webui:/app/backend/data
+    networks:
+      - aistack-network
+    ports:
+      - 3000:8080
+    depends_on:
+      - ollama
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  searxng:
+    container_name: searxng
+    image: searxng/searxng:latest
+    networks:
+      - aistack-network
+    ports:
+      - 3080:8080
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${BASE_PATH}/searxng:/etc/searxng
+    depends_on:
+      - ollama
+      - open-webui
+    restart: unless-stopped
+
+networks:
+  aistack-network:
+    driver: bridge
