@@ -1,0 +1,13 @@
+name: ubuntu
+services:
+  ubuntu:
+    container_name: ubuntu_bash
+    image: ubuntu:latest
+    environment:
+      - IMMICH_DB_PASSWORD=${IMMICH_DB_PASSWORD}
+    volumes:
+      - ${BASE_PATH}:/data
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    command: /bin/bash
