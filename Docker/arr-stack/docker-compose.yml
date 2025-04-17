@@ -65,6 +65,7 @@ services:
       - ${BASE_PATH}/sonarr/config:/config
       - ${DOWNLOADS_PATH}:/downloads
       - ${TV_PATH}:/tv
+      - ${ANIME_PATH}:/anime
     depends_on:
       prowlarr:
         condition: service_started
