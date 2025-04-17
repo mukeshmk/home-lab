@@ -3,12 +3,10 @@ services:
   portainer:
     container_name: portainer
     image: portainer/portainer-ce:latest
-    env_file:
-      - D:/Docker/envs/home_lab.env
     ports:
       - 9443:9443
     volumes:
-      - D:/Docker/portainer/data:/data
+      - /data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
 volumes:
