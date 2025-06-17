@@ -1,0 +1,11 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      DOMAIN: "https://vaultwarden.homelab.md"
+    volumes:
+      - ${BASE_PATH}/vaultwarden/data:/data
+    ports:
+      - 80:80
