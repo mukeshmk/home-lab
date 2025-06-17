@@ -1,0 +1,16 @@
+name: tailscale
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    network_mode: "host"
+    volumes:
+      - /dev/net/tun:/dev/net/tun
+      - /docker/portainer/tailscale:/var/lib/tailscale
+    environment:
+      - TS_AUTHKEY=<TS_AUTHKEY>
+    command: tailscaled
+    restart: unless-stopped
