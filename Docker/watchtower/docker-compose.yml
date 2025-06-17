@@ -4,5 +4,7 @@ services:
     image: containrrr/watchtower:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+    command: --schedule "0 0 1-7 * 6"
     restart: unless-stopped
-    
