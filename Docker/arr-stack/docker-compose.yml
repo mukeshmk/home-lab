@@ -1,8 +1,40 @@
 name: arr-stack
 services:
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      - starr-network
+    ports:
+      - 7044:7044 # qbittorrent web interface
+      - 6881:6881 # qbittorrent torrent port
+      - 6881:6881/udp # qbittorrent udp torrent port
+      - 9696:9696 # prowlarr
+    volumes:
+      - ${BASE_PATH}/gluetun:/gluetun
+    environment:
+      - VPN_SERVICE_PROVIDER=surfshark
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=${SURFSHARK_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${SURFSHARK_ADDRESS}
+      - SERVER_COUNTRIES=${SURFSHARK_SERVER_COUNTRIES}
+    healthcheck:
+      test: ping -c 1 www.google.com || exit 1
+      interval: 20s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
   qbittorrent:
-    container_name: qbittorrent
     image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    labels:
+      - deunhealth.restart.on.unhealthy=true
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
@@ -12,13 +44,29 @@ services:
     volumes:
       - ${BASE_PATH}/qbittorrent/config:/config
       - ${DOWNLOADS_PATH}:/downloads
-    networks:
-      - starr-network
-    ports:
-      - 7044:7044
-      - 6881:6881
-      - 6881:6881/udp
-    restart: unless-stopped
+    depends_on:
+      gluetun:
+        condition: service_healthy
+        restart: true
+    network_mode: service:gluetun
+    healthcheck:
+      test: ping -c 1 www.google.com || exit 1
+      interval: 60s
+      retries: 3
+      start_period: 20s
+      timeout: 10s
+
+  deunhealth:
+    image: qmcgaw/deunhealth
+    container_name: deunhealth
+    network_mode: "none"
+    environment:
+      - LOG_LEVEL=info
+      - HEALTH_SERVER_ADDRESS=127.0.0.1:9999
+      - TZ=${TZ:-Europe/Dublin}
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   flaresolverr:
     container_name: flaresolverr
@@ -35,8 +83,8 @@ services:
     restart: unless-stopped
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
+    image: lscr.io/linuxserver/prowlarr:latest
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
@@ -48,10 +96,10 @@ services:
         condition: service_started
       qbittorrent:
         condition: service_started
-    networks:
-      - starr-network
-    ports:
-      - 9696:9696
+      gluetun:
+        condition: service_healthy
+        restart: true
+    network_mode: service:gluetun
     restart: unless-stopped
 
   sonarr:
@@ -66,6 +114,8 @@ services:
       - ${DOWNLOADS_PATH}:/downloads
       - ${TV_PATH}:/tv
       - ${ANIME_PATH}:/anime
+      - ${PENSIEVE_TV_PATH}:/pensieve_tv
+      - ${PENSIEVE_ANIME_PATH}:/pensieve_anime
     depends_on:
       prowlarr:
         condition: service_started
@@ -84,8 +134,9 @@ services:
       - TZ=${TZ:-Europe/Dublin}
     volumes:
       - ${BASE_PATH}/radarr/config:/config
-      - ${MOVIES_PATH}:/movies
       - ${DOWNLOADS_PATH}:/downloads
+      - ${MOVIES_PATH}:/movies
+      - ${PENSIEVE_MOVIE_PATH}:/pensieve_movies
     depends_on:
       prowlarr:
         condition: service_started
@@ -95,9 +146,56 @@ services:
       - 7878:7878
     restart: unless-stopped
 
+  bazarr:
+    container_name: bazarr
+    image: lscr.io/linuxserver/bazarr:latest
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Dublin}
+    volumes:
+      - ${BASE_PATH}/bazarr/config:/config
+      - ${MOVIES_PATH}:/movies
+      - ${TV_PATH}:/tv
+      - ${ANIME_PATH}:/anime
+      - ${PENSIEVE_MOVIE_PATH}:/pensieve_movies
+      - ${PENSIEVE_TV_PATH}:/pensieve_tv
+      - ${PENSIEVE_ANIME_PATH}:/pensieve_anime
+    depends_on:
+      sonarr:
+        condition: service_started
+      radarr:
+        condition: service_started
+    networks:
+      - starr-network
+    ports:
+      - 6767:6767
+    restart: unless-stopped
+
+  readarr:
+    container_name: readarr
+    image: lscr.io/linuxserver/readarr:develop
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Dublin}
+    volumes:
+      - ${BASE_PATH}/readarr/config:/config
+      - ${DOWNLOADS_PATH}:/downloads
+      - ${EBOOKS_PATH}:/ebooks
+      - ${AUDIO_BOOKS_PATH}:/audiobooks
+    depends_on:
+      prowlarr:
+        condition: service_started
+    networks:
+      - starr-network
+    ports:
+      - 8787:8787
+    restart: unless-stopped
+
   jellyseerr:
-    image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
+    image: fallenbagel/jellyseerr:latest
     environment:
       - LOG_LEVEL=debug
       - TZ=${TZ:-Europe/Dublin}
@@ -112,21 +210,6 @@ services:
       - starr-network
     ports:
       - 5055:5055
-    restart: unless-stopped
-  
-  bazarr:
-    image: lscr.io/linuxserver/bazarr:latest
-    container_name: bazarr
-    environment:
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
-      - TZ=${TZ:-Europe/Dublin}
-    volumes:
-      - ${BASE_PATH}/bazarr/config:/config
-      - ${MOVIES_PATH}:/movies
-      - ${TV_PATH}:/tv
-    ports:
-      - 6767:6767
     restart: unless-stopped
 
 networks:
