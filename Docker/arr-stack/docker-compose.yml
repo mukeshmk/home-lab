@@ -13,7 +13,12 @@ services:
       - 7044:7044 # qbittorrent web interface
       - 6881:6881 # qbittorrent torrent port
       - 6881:6881/udp # qbittorrent udp torrent port
+      - 8191:8191 # flaresolverr
       - 9696:9696 # prowlarr
+      - 8989:8989 # sonarr
+      - 7878:7878 # radarr
+      - 8787:8787 # readarr
+      - 6767:6767 # bazarr
     volumes:
       - ${BASE_PATH}/gluetun:/gluetun
     environment:
@@ -76,10 +81,7 @@ services:
       - LOG_HTML=false
       - CAPTCHA_SOLVER=none
       - TZ=${TZ:-Europe/Dublin}
-    networks:
-      - starr-network
-    ports:
-      - 8191:8191
+    network_mode: service:gluetun
     restart: unless-stopped
 
   prowlarr:
@@ -119,10 +121,7 @@ services:
     depends_on:
       prowlarr:
         condition: service_started
-    networks:
-      - starr-network
-    ports:
-      - 8989:8989
+    network_mode: service:gluetun
     restart: unless-stopped
 
   radarr:
@@ -140,10 +139,7 @@ services:
     depends_on:
       prowlarr:
         condition: service_started
-    networks:
-      - starr-network
-    ports:
-      - 7878:7878
+    network_mode: service:gluetun
     restart: unless-stopped
 
   bazarr:
@@ -166,10 +162,7 @@ services:
         condition: service_started
       radarr:
         condition: service_started
-    networks:
-      - starr-network
-    ports:
-      - 6767:6767
+    network_mode: service:gluetun
     restart: unless-stopped
 
   readarr:
@@ -187,10 +180,7 @@ services:
     depends_on:
       prowlarr:
         condition: service_started
-    networks:
-      - starr-network
-    ports:
-      - 8787:8787
+    network_mode: service:gluetun
     restart: unless-stopped
 
   jellyseerr:
