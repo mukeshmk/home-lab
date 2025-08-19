@@ -1,0 +1,46 @@
+services:
+  teslamate:
+    image: ghcr.io/teslamate-org/teslamate:pr-4453
+    container_name: teslamate
+    restart: always
+    environment:
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASS=${DATABASE_PASS}
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+      - MQTT_HOST=${MQTT_HOST}       # use this only to connect with existing MQTT host - like HA
+      - MQTT_USERNAME=${MQTT_USER}   # use this only to connect with existing MQTT host - like HA
+      - MQTT_PASSWORD=${MQTT_PASS}   # use this only to connect with existing MQTT host - like HA
+      - MQTT_TLS=false               # use this only to connect with existing MQTT host - like HA
+    ports:
+      - 4000:4000
+    volumes:
+      - ${BASE_PATH}/teslamate/import:/opt/app/import
+    cap_drop:
+      - all
+
+  database:
+    image: postgres:17
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASS}
+      - POSTGRES_DB=teslamate
+    volumes:
+      - ${BASE_PATH}/teslamate/db:/var/lib/postgresql/data
+
+  grafana:
+    image: teslamate/grafana:latest
+    container_name: teslamate_grafana
+    restart: always
+    environment:
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASS=${DATABASE_PASS}
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+    ports:
+      - 3000:3000
+    volumes:
+      - ${BASE_PATH}/teslamate/grafana:/var/lib/grafana
