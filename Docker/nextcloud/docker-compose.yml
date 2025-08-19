@@ -1,0 +1,54 @@
+services:
+  nextcloud:
+    image: lscr.io/linuxserver/nextcloud:latest
+    container_name: nextcloud
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Dublin}
+      - MYSQL_PASSWORD=nextcloudpass
+      - MYSQL_DATABASE=nextclouddb
+      - MYSQL_USER=nextclouduser
+      - MYSQL_HOST=mariadb
+    volumes:
+      - ${BASE_PATH}/nextcloud/config:/config
+      - /data:/data
+    ports:
+      - 8080:80
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:10.6
+    container_name: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=nextclouddb
+      - MYSQL_USER=nextclouduser
+      - MYSQL_PASSWORD=nextcloudpass
+    volumes:
+      - ${BASE_PATH}/nextcloud/mariadb/data:/var/lib/mysql
+    restart: unless-stopped
+
+
+  # NOTE: onlyoffice integration doesn't seem to work locally without a proper cert
+  onlyoffice:
+    image: onlyoffice/documentserver
+    container_name: onlyoffice
+    ports:
+      - 8443:443
+    restart: always
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Dublin}
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/mkcert-rootCA.crt
+    volumes:
+      - ${BASE_PATH}/onlyoffice/DocumentServer/logs:/var/log/onlyoffice
+      - ${BASE_PATH}/onlyoffice/DocumentServer/data:/var/www/onlyoffice/Data
+      - ${BASE_PATH}/onlyoffice/DocumentServer/lib:/var/lib/onlyoffice
+      - ${BASE_PATH}/onlyoffice/DocumentServer/db:/var/lib/postgresql
+      - ${BASE_PATH}/onlyoffice/DocumentServer/default.json:/etc/onlyoffice/documentserver/default.json
+      - ${BASE_PATH}/_wildcard.homelab.md-cert.pem:/usr/local/share/ca-certificates/mkcert-rootCA.crt
