@@ -1,0 +1,48 @@
+services:
+  paperless-ai:
+    image: clusterzx/paperless-ai:latest
+    container_name: paperless-ai
+    restart: unless-stopped
+    environment:
+      PAPERLESS_URL: ${PAPERLESS_URL}
+      PAPERLESS_API_URL: ${PAPERLESS_API_URL}
+      PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN}
+      PAPERLESS_USERNAME: ${PAPERLESS_USERNAME}
+      AI_PROVIDER: ${AI_PROVIDER}
+      OLLAMA_API_URL: ${OLLAMA_URL}
+      OLLAMA_MODEL: ${OLLAMA_MODEL}
+      RAG_SERVICE_URL: ${RAG_SERVICE_URL}
+      RAG_SERVICE_ENABLED: ${RAG_SERVICE_ENABLED}
+      SCAN_INTERVAL: ${SCAN_INTERVAL}
+    ports:
+      - 3000:3000
+    volumes:
+      - ${BASE_PATH}/paperless-ai/paperless-ai/data:/app/data
+  
+  paperless-gpt:
+    image: icereed/paperless-gpt:latest
+    container_name: paperless-gpt
+    restart: unless-stopped
+    ports:
+      - 3002:8080
+    environment:
+      PAPERLESS_BASE_URL: ${PAPERLESS_URL}
+      PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN}
+      LLM_PROVIDER: ${AI_PROVIDER}
+      LLM_MODEL: ${OLLAMA_MODEL}
+      OLLAMA_HOST: ${OLLAMA_URL}
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH}
+      TOKEN_LIMIT: ${TOKEN_LIMIT}
+      OCR_PROVIDER: ${OCR_PROVIDER}
+      VISION_LLM_PROVIDER: ${VISION_LLM_PROVIDER}
+      VISION_LLM_MODEL: ${VISION_LLM_MODEL}
+      AUTO_OCR_TAG: ${AUTO_OCR_TAG}
+      AUTO_TAG: ${AUTO_TAG}
+      MANUAL_TAG: ${MANUAL_TAG}
+      PDF_OCR_TAGGING: ${PDF_OCR_TAGGING}
+      PDF_OCR_COMPLETE_TAG: ${PDF_OCR_COMPLETE_TAG}
+      PDF_UPLOAD: ${PDF_UPLOAD}
+      LOG_LEVEL: ${LOG_LEVEL}
+    volumes:
+      - ${BASE_PATH}/paperless-ai/paperless-gpt/prompts:/app/prompts
+
