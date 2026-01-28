@@ -1,0 +1,66 @@
+services:
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    container_name: postgres
+    environment: 
+      TZ: ${TZ}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ${BASE_PATH}/paperless_stack/postgres/data:/var/lib/postgresql
+
+  redis:
+    image: docker.io/library/redis:8
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - ${BASE_PATH}/paperless_stack/redis/data:/data
+    environment: 
+      TZ: ${TZ}
+  
+  gotenberg:
+    image: docker.io/gotenberg/gotenberg:8.25
+    container_name: gotenberg
+    restart: unless-stopped
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+  
+  tika:
+    image: docker.io/apache/tika:latest
+    container_name: tika
+    restart: unless-stopped
+    environment: 
+      TZ: ${TZ}
+  
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless-ngx
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - gotenberg
+      - tika
+    ports:
+      - 8000:8000
+    environment: 
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      PAPERLESS_REDIS: ${PAPERLESS_REDIS}
+      PAPERLESS_DBHOST: ${PAPERLESS_DBHOST}
+      PAPERLESS_DBNAME: ${POSTGRES_DB}
+      PAPERLESS_DBUSER: ${POSTGRES_USER}
+      PAPERLESS_DBPASS: ${POSTGRES_PASSWORD}
+      PAPERLESS_TIKA_ENABLED: ${PAPERLESS_TIKA_ENABLED}
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: ${PAPERLESS_TIKA_GOTENBERG_ENDPOINT}
+      PAPERLESS_TIKA_ENDPOINT: ${PAPERLESS_TIKA_ENDPOINT}
+    volumes:
+      - ${BASE_PATH}/paperless_stack/paperless/data:/usr/src/paperless/data
+      - ${BASE_PATH}/paperless_stack/paperless/media:/usr/src/paperless/media
+      - ${BASE_PATH}/paperless_stack/paperless/export:/usr/src/paperless/export
+      - ${BASE_PATH}/paperless_stack/paperless/consume:/usr/src/paperless/consume
