@@ -1,0 +1,14 @@
+name: obsidian-livesync
+services:
+  couchdb:
+    image: couchdb:latest
+    container_name: obsidian-couchdb
+    environment:
+      - COUCHDB_USER=${COUCHDB_USER}
+      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
+    ports:
+      - 5984:5984
+    volumes:
+      - ${BASE_PATH}/obsidian-livesync/data:/opt/couchdb/data
+      - ${BASE_PATH}/obsidian-livesync/etc:/opt/couchdb/etc/local.d
+    restart: unless-stopped
