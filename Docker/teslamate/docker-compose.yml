@@ -9,10 +9,10 @@ services:
       - DATABASE_PASS=${DATABASE_PASS}
       - DATABASE_NAME=teslamate
       - DATABASE_HOST=database
-      - MQTT_HOST=${MQTT_HOST}       # use this only to connect with existing MQTT host - like HA
-      - MQTT_USERNAME=${MQTT_USER}   # use this only to connect with existing MQTT host - like HA
-      - MQTT_PASSWORD=${MQTT_PASS}   # use this only to connect with existing MQTT host - like HA
-      - MQTT_TLS=false               # use this only to connect with existing MQTT host - like HA
+      - MQTT_HOST=${MQTT_HOST}
+      - MQTT_USERNAME=${MQTT_USER}
+      - MQTT_PASSWORD=${MQTT_PASS}
+      - MQTT_TLS=false
     ports:
       - 4000:4000
     volumes:

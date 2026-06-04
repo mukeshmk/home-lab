@@ -116,8 +116,6 @@ services:
       - ${DOWNLOADS_PATH}:/downloads
       - ${TV_PATH}:/tv
       - ${ANIME_PATH}:/anime
-      - ${PENSIEVE_TV_PATH}:/pensieve_tv
-      - ${PENSIEVE_ANIME_PATH}:/pensieve_anime
     depends_on:
       prowlarr:
         condition: service_started
@@ -135,7 +133,6 @@ services:
       - ${BASE_PATH}/radarr/config:/config
       - ${DOWNLOADS_PATH}:/downloads
       - ${MOVIES_PATH}:/movies
-      - ${PENSIEVE_MOVIE_PATH}:/pensieve_movies
     depends_on:
       prowlarr:
         condition: service_started
@@ -154,9 +151,6 @@ services:
       - ${MOVIES_PATH}:/movies
       - ${TV_PATH}:/tv
       - ${ANIME_PATH}:/anime
-      - ${PENSIEVE_MOVIE_PATH}:/pensieve_movies
-      - ${PENSIEVE_TV_PATH}:/pensieve_tv
-      - ${PENSIEVE_ANIME_PATH}:/pensieve_anime
     depends_on:
       sonarr:
         condition: service_started
@@ -183,14 +177,15 @@ services:
     network_mode: service:gluetun
     restart: unless-stopped
 
-  jellyseerr:
-    container_name: jellyseerr
-    image: fallenbagel/jellyseerr:latest
+  seerr:
+    container_name: seerr
+    image: ghcr.io/seerr-team/seerr:latest
+    init: true
     environment:
       - LOG_LEVEL=debug
       - TZ=${TZ:-Europe/Dublin}
     volumes:
-      - ${BASE_PATH}/jellyseerr:/app/config
+      - ${BASE_PATH}/seerr:/app/config
     depends_on:
       radarr:
         condition: service_started
@@ -201,6 +196,12 @@ services:
     ports:
       - 5055:5055
     restart: unless-stopped
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
 
 networks:
   starr-network:
