@@ -1,0 +1,14 @@
+services:
+  code-server:
+    image: codercom/code-server:latest
+    container_name: code-server
+    user: 0:0
+    environment:
+      - TZ=${TZ:-Europe/Dublin}
+      - PASSWORD=${PASSWORD}
+    ports:
+      - 8080:8080
+    volumes:
+      - ${BASE_PATH}/vscode/config:/home/coder/.config 
+      - ${BASE_PATH}/vscode/projects:/home/coder/project 
+    restart: unless-stopped
