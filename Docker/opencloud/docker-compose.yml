@@ -1,0 +1,18 @@
+services:
+  opencloud:
+    image: opencloudeu/opencloud-rolling
+    container_name: opencloud
+    user: 0:0
+    volumes:
+      - ${BASE_PATH}/opencloud/data:/var/lib/opencloud
+      - ${BASE_PATH}/opencloud/config:/etc/opencloud
+      - ${STORAGE_PATH}/opencloud/users:/var/lib/opencloud/storage/users
+    ports:
+      - 9200:9200
+    entrypoint:
+      - /bin/sh
+    command: ["-c", "opencloud init --insecure true || true; opencloud server"]
+    environment:
+      - OC_URL=https://cloud.homelab.md
+      - IDM_CREATE_DEMO_USERS=false
+    restart: unless-stopped
