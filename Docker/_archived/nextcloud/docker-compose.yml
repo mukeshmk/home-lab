@@ -31,24 +31,23 @@ services:
       - ${BASE_PATH}/nextcloud/mariadb/data:/var/lib/mysql
     restart: unless-stopped
 
-
-  # NOTE: onlyoffice integration doesn't seem to work locally without a proper cert
   onlyoffice:
     image: onlyoffice/documentserver
     container_name: onlyoffice
     ports:
-      - 8443:443
+      - 8081:80
     restart: always
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/Dublin}
       - JWT_SECRET=${JWT_SECRET}
+      - JWT_ENABLED=true
+      - JWT_HEADER=Authorization
       - NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/mkcert-rootCA.crt
     volumes:
       - ${BASE_PATH}/onlyoffice/DocumentServer/logs:/var/log/onlyoffice
       - ${BASE_PATH}/onlyoffice/DocumentServer/data:/var/www/onlyoffice/Data
       - ${BASE_PATH}/onlyoffice/DocumentServer/lib:/var/lib/onlyoffice
       - ${BASE_PATH}/onlyoffice/DocumentServer/db:/var/lib/postgresql
-      - ${BASE_PATH}/onlyoffice/DocumentServer/default.json:/etc/onlyoffice/documentserver/default.json
       - ${BASE_PATH}/_wildcard.homelab.md-cert.pem:/usr/local/share/ca-certificates/mkcert-rootCA.crt
