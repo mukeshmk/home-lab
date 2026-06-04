@@ -1,0 +1,16 @@
+services:
+  abrp:
+    image: fetzu/teslamate-abrp:latest
+    container_name: abrp
+    restart: always
+    environment:
+      - CAR_NUMBER=1
+      - USER_TOKEN=${USER_TOKEN}
+      - MQTT_SERVER=${MQTT_HOST}
+      - MQTT_USERNAME=${MQTT_USER}
+      - MQTT_PASSWORD=${MQTT_PASS}
+      - MQTT_TLS=false
+      # - MQTT_PORT=1883
+      # - STATUS_TOPIC=teslamate-abrp
+      # - SKIP_LOCATION=True
+      # - TM2ABRP_DEBUG=True
