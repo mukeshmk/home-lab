@@ -1,0 +1,29 @@
+# To run Dry Run of backup
+
+docker exec -it immich-automated-backup bash /rclone/immich/dry-run.sh
+
+docker exec -it proxmox-automated-backup bash /rclone/proxmox/dry-run.sh
+
+##########################################################################
+
+# To run on-demand backup of immich
+
+# BLOCKING BACKUP
+
+docker exec -it immich-automated-backup bash /rclone/immich/backup.sh
+
+docker exec -it proxmox-automated-backup bash /rclone/proxmox/backup.sh
+
+# NON-BLOCKING BACKUP
+
+docker exec -d immich-automated-backup bash /rclone/immich/backup.sh
+
+docker exec -d proxmox-automated-backup bash /rclone/proxmox/backup.sh
+
+##########################################################################
+
+# To view logs
+
+tail -f /docker/rclone/logs/immich/backup-$(date +%Y-%m-%d).log
+
+tail -f /docker/rclone/logs/proxmox/backup-$(date +%Y-%m-%d).log
