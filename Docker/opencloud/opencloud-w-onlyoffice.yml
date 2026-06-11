@@ -17,11 +17,12 @@ services:
       - IDM_CREATE_DEMO_USERS=false
       - OC_INSECURE=true
       - PROXY_TLS=false
-      - "JWT_SECRET=${JWT_SECRET}"
+      - JWT_SECRET=${JWT_SECRET}
       - NATS_NATS_HOST=0.0.0.0
       - GATEWAY_GRPC_ADDR=0.0.0.0:9142
       - FRONTEND_APP_HANDLER_SECURE_VIEW_APP_ADDR=http://collaboration:9300
       - PROXY_CSP_CONFIG_FILE_LOCATION=/etc/opencloud/csp.yaml
+      - APP_REGISTRY_MIMETYPES_CONFIG_FILE=/etc/opencloud/app-registry.yaml
     restart: unless-stopped
 
   collaboration:
@@ -37,7 +38,7 @@ services:
       - /bin/sh
     command: ["-c", "while [ ! -f /etc/opencloud/opencloud.yaml ]; do echo 'Waiting for config...'; sleep 2; done; echo 'Waiting for OnlyOffice...'; while ! wget -q -O /dev/null http://onlyoffice:80/hosting/discovery; do echo 'OnlyOffice not ready...'; sleep 5; done; echo 'Starting collaboration server'; exec opencloud collaboration server"]
     environment:
-      - "JWT_SECRET=${JWT_SECRET}"
+      - JWT_SECRET=${JWT_SECRET}
       - COLLABORATION_GRPC_ADDR=0.0.0.0:9301
       - COLLABORATION_HTTP_ADDR=0.0.0.0:9300
       - MICRO_REGISTRY=nats-js-kv
