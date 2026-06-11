@@ -1,0 +1,105 @@
+services:
+  opencloud:
+    image: opencloudeu/opencloud-rolling
+    container_name: opencloud
+    user: "0:0"
+    volumes:
+      - ${BASE_PATH}/opencloud/data:/var/lib/opencloud
+      - ${BASE_PATH}/opencloud/config:/etc/opencloud
+      - ${STORAGE_PATH}/opencloud/users:/var/lib/opencloud/storage/users
+    ports:
+      - "9200:9200"
+    entrypoint:
+      - /bin/sh
+    command: ["-c", "opencloud init || true; opencloud server"]
+    environment:
+      - OC_URL=https://drive.llama-castor.co.uk
+      - IDM_CREATE_DEMO_USERS=false
+      - OC_INSECURE=true
+      - PROXY_TLS=false
+      - "JWT_SECRET=${JWT_SECRET}"
+      - NATS_NATS_HOST=0.0.0.0
+      - GATEWAY_GRPC_ADDR=0.0.0.0:9142
+      - FRONTEND_APP_HANDLER_SECURE_VIEW_APP_ADDR=http://collaboration:9300
+      - PROXY_CSP_CONFIG_FILE_LOCATION=/etc/opencloud/csp.yaml
+    restart: unless-stopped
+
+  collaboration:
+    image: opencloudeu/opencloud-rolling
+    container_name: collaboration
+    user: "0:0"
+    volumes:
+      - ${BASE_PATH}/opencloud/config:/etc/opencloud
+    depends_on:
+      - opencloud
+      - onlyoffice
+    entrypoint:
+      - /bin/sh
+    command: ["-c", "while [ ! -f /etc/opencloud/opencloud.yaml ]; do echo 'Waiting for config...'; sleep 2; done; echo 'Waiting for OnlyOffice...'; while ! wget -q -O /dev/null http://onlyoffice:80/hosting/discovery; do echo 'OnlyOffice not ready...'; sleep 5; done; echo 'Starting collaboration server'; exec opencloud collaboration server"]
+    environment:
+      - "JWT_SECRET=${JWT_SECRET}"
+      - COLLABORATION_GRPC_ADDR=0.0.0.0:9301
+      - COLLABORATION_HTTP_ADDR=0.0.0.0:9300
+      - MICRO_REGISTRY=nats-js-kv
+      - MICRO_REGISTRY_ADDRESS=opencloud:9233
+      - COLLABORATION_WOPI_SRC=https://drive.llama-castor.co.uk
+      - COLLABORATION_APP_NAME=OnlyOffice
+      - COLLABORATION_APP_PRODUCT=OnlyOffice
+      - COLLABORATION_APP_ADDR=https://office.llama-castor.co.uk
+      - COLLABORATION_APP_INTERNAL_URL=http://onlyoffice:80
+      - COLLABORATION_APP_INSECURE=true
+      - COLLABORATION_APP_PROOF_DISABLE=true
+      - COLLABORATION_CS3API_DATAGATEWAY_INSECURE=true
+      - OC_URL=https://drive.llama-castor.co.uk
+    restart: unless-stopped
+
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    container_name: onlyoffice
+    depends_on:
+      - onlyoffice-postgres
+      - onlyoffice-redis
+      - onlyoffice-rabbitmq
+    environment:
+      - JWT_ENABLED=false
+      - WOPI_ENABLED=true
+      - ALLOW_META_IP_ADDRESS=true
+      - ALLOW_PRIVATE_IP_ADDRESS=true
+      - USE_UNAUTHORIZED_STORAGE=true
+      - DB_TYPE=postgres
+      - DB_HOST=onlyoffice-postgres
+      - DB_PORT=5432
+      - DB_NAME=onlyoffice
+      - DB_USER=onlyoffice
+      - DB_PWD=onlyoffice
+      - AMQP_URI=amqp://guest:guest@onlyoffice-rabbitmq
+      - REDIS_SERVER_HOST=onlyoffice-redis
+      - REDIS_SERVER_PORT=6379
+    ports:
+      - "9980:80"
+    volumes:
+      - ${BASE_PATH}/onlyoffice/data:/var/www/onlyoffice/Data
+      - ${BASE_PATH}/onlyoffice/logs:/var/log/onlyoffice
+      - ${BASE_PATH}/onlyoffice/lib:/var/lib/onlyoffice
+    restart: unless-stopped
+
+  onlyoffice-postgres:
+    image: postgres:16-alpine
+    container_name: onlyoffice-postgres
+    environment:
+      - POSTGRES_DB=onlyoffice
+      - POSTGRES_USER=onlyoffice
+      - POSTGRES_PASSWORD=onlyoffice
+    volumes:
+      - ${BASE_PATH}/onlyoffice/db:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  onlyoffice-redis:
+    image: redis:7-alpine
+    container_name: onlyoffice-redis
+    restart: unless-stopped
+
+  onlyoffice-rabbitmq:
+    image: rabbitmq:3-alpine
+    container_name: onlyoffice-rabbitmq
+    restart: unless-stopped
