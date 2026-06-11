@@ -4,9 +4,11 @@ docker exec -it immich-automated-backup bash /rclone/immich/dry-run.sh
 
 docker exec -it proxmox-automated-backup bash /rclone/proxmox/dry-run.sh
 
+docker exec -it opencloud-automated-backup bash /rclone/opencloud/dry-run.sh
+
 ##########################################################################
 
-# To run on-demand backup of immich
+# To run on-demand backup of immich, proxmox and opencloud
 
 # BLOCKING BACKUP
 
@@ -14,11 +16,17 @@ docker exec -it immich-automated-backup bash /rclone/immich/backup.sh
 
 docker exec -it proxmox-automated-backup bash /rclone/proxmox/backup.sh
 
+# !!STOPS OPENCLOUD CONTAINERS BEFORE BACKUP!!
+docker exec -it opencloud-automated-backup bash /rclone/opencloud/backup.sh
+
 # NON-BLOCKING BACKUP
 
 docker exec -d immich-automated-backup bash /rclone/immich/backup.sh
 
 docker exec -d proxmox-automated-backup bash /rclone/proxmox/backup.sh
+
+# !!STOPS OPENCLOUD CONTAINERS BEFORE BACKUP!!
+docker exec -d opencloud-automated-backup bash /rclone/opencloud/backup.sh
 
 ##########################################################################
 
@@ -27,3 +35,5 @@ docker exec -d proxmox-automated-backup bash /rclone/proxmox/backup.sh
 tail -f /docker/rclone/logs/immich/backup-$(date +%Y-%m-%d).log
 
 tail -f /docker/rclone/logs/proxmox/backup-$(date +%Y-%m-%d).log
+
+tail -f /docker/rclone/logs/opencloud/backup-$(date +%Y-%m-%d).log

@@ -1,0 +1,17 @@
+services:
+  opencloud-backup:
+    image: alpine:latest
+    container_name: opencloud-automated-backup
+    environment:
+      - TZ=${TZ:-Europe/Dublin}
+    volumes:
+      - ${BASE_PATH}/rclone:/rclone
+      - ${BASE_PATH}/opencloud:/opencloud/data:ro
+      - ${STORAGE_PATH}/opencloud/users:/opencloud/users:ro
+      - ${RSYNC_PATH}:/rsync
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      sh -c "apk add --no-cache bash rsync rclone tzdata coreutils docker-cli &&
+             echo '0 3 * * * bash /rclone/opencloud/backup.sh' > /etc/crontabs/root &&
+             crond -f -d 8"
+    restart: unless-stopped
