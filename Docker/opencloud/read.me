@@ -1,67 +1,29 @@
-Run this command from the lxc where the docker stack for opencloud-w-collabora is running
+# The following is required for both collabora and onlyoffice.
 
-REPLACE ${BASE_PATH} with actual path
-also REPLACE `mydomain.com` with actual domain
+copy over the csp.yaml file into the `${BASE_PATH}/opencloud/config` location 
 
-"""
-cat > ${BASE_PATH}/opencloud/config/csp.yaml << 'EOF'
-directives:
-  child-src:
-    - "'self'"
-  connect-src:
-    - "'self'"
-    - "blob:"
-    - "wss://office.mydomain.com/"
-  default-src:
-    - "'none'"
-  font-src:
-    - "'self'"
-  frame-ancestors:
-    - "'self'"
-  frame-src:
-    - "'self'"
-    - "blob:"
-    - "https://embed.diagrams.net/"
-    - "https://office.mydomain.com/"
-  img-src:
-    - "'self'"
-    - "data:"
-    - "blob:"
-    - "https://office.mydomain.com/"
-  manifest-src:
-    - "'self'"
-  media-src:
-    - "'self'"
-  object-src:
-    - "'self'"
-    - "blob:"
-  script-src:
-    - "'self'"
-    - "'unsafe-inline'"
-    - "'unsafe-eval'"
-  style-src:
-    - "'self'"
-    - "'unsafe-inline'"
-  worker-src:
-    - "'self'"
-    - "blob:"
-EOF
-"""
+REPLACE `${BASE_PATH}` with actual path
+also REPLACE `mydomain.com` with actual domain in the `csp.yaml` file
+
+--
+# The following is required for both collabora and onlyoffice.
 
 Apart from this I have made the following changes to cloudflare dashboard
 
 1. In the cloudflared tunnel for drive / office (one tunnel in my setup) - I have update the "HTTP Host Header" setting under "HTTP Setting" for the `office` application rounte to `office.mydomain.com`
 2. I have created a new custom security rule under `Security rules > Custom rules > Create custom rule`:
-    - Rule name (required): Whitelist WOPI Handshake
-    - Field: URI Path
-    - Operator: wildcard
-    - Value: /hosting/discovery
-    - Choose action: Skip
+    - Rule name (required): `Whitelist WOPI Handshake`
+    - Field: `URI Path`
+    - Operator: `wildcard`
+    - Value: `/hosting/discovery`
+    - Choose action: `Skip`
     - WAF components to skip: I have checked everything (All remaining custom rules, All rate limiting rules, All managed rules, All Super Bot Fight Mode Rules)
 3. Made to the tunnel ip address and port for drive / office match the lxc container ip and application ports.
 
 
 ---
+# The following is required only for onlyoffice if you want to registry ms office app 
+# - if not nothing will break it will be annoying to change file extensions everytime we create a new file.
 
-
-The same config is needed for opencloud-w-onlyoffice - it's just that onlyoffice takes SO MUCH LONGER to load so it can take time the first time opening in the browser via cloudflared tunnel - be patient.
+Apart from the above `csp.yaml`, onlyoffice also required `app-registry.yaml` file to be copied over to `${BASE_PATH}/opencloud/config`
+- it's just that onlyoffice takes SO MUCH LONGER to load so it can take time the first time opening in the browser via cloudflared tunnel - be patient.
