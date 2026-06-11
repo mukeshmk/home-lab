@@ -1,0 +1,61 @@
+Run this command from the lxc where the docker stack for opencloud-w-collabora is running
+
+REPLACE ${BASE_PATH} with actual path
+also REPLACE `mydomain.com` with actual domain
+
+"""
+cat > ${BASE_PATH}/opencloud/config/csp.yaml << 'EOF'
+directives:
+  child-src:
+    - "'self'"
+  connect-src:
+    - "'self'"
+    - "blob:"
+    - "wss://office.mydomain.com/"
+  default-src:
+    - "'none'"
+  font-src:
+    - "'self'"
+  frame-ancestors:
+    - "'self'"
+  frame-src:
+    - "'self'"
+    - "blob:"
+    - "https://embed.diagrams.net/"
+    - "https://office.mydomain.com/"
+  img-src:
+    - "'self'"
+    - "data:"
+    - "blob:"
+    - "https://office.mydomain.com/"
+  manifest-src:
+    - "'self'"
+  media-src:
+    - "'self'"
+  object-src:
+    - "'self'"
+    - "blob:"
+  script-src:
+    - "'self'"
+    - "'unsafe-inline'"
+    - "'unsafe-eval'"
+  style-src:
+    - "'self'"
+    - "'unsafe-inline'"
+  worker-src:
+    - "'self'"
+    - "blob:"
+EOF
+"""
+
+Apart from this I have made the following changes to cloudflare dashboard
+
+1. In the cloudflared tunnel for drive / office (one tunnel in my setup) - I have update the "HTTP Host Header" setting under "HTTP Setting" for the `office` application rounte to `office.mydomain.com`
+2. I have created a new custom security rule under `Security rules > Custom rules > Create custom rule`:
+    - Rule name (required): Whitelist WOPI Handshake
+    - Field: URI Path
+    - Operator: wildcard
+    - Value: /hosting/discovery
+    - Choose action: Skip
+    - WAF components to skip: I have checked everything (All remaining custom rules, All rate limiting rules, All managed rules, All Super Bot Fight Mode Rules)
+3. Made to the tunnel ip address and port for drive / office match the lxc container ip and application ports.
