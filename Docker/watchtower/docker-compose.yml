@@ -6,5 +6,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - WATCHTOWER_CLEANUP=true
-    command: --schedule "0 0 1-7 * 6"
+      - WATCHTOWER_REMOVE_VOLUMES=true
+      - DOCKER_API_VERSION=1.44
+    command: --schedule "0 0 1 * *"
     restart: unless-stopped
