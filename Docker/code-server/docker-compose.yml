@@ -9,6 +9,12 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - ${BASE_PATH}/vscode/config:/home/coder/.config 
-      - ${BASE_PATH}/vscode/projects:/home/coder/project 
+      # --- VS Code Settings & Extensions ---
+      - ${BASE_PATH}/vscode/config:/root/.config/code-server
+      - ${BASE_PATH}/vscode/extensions:/root/.local/share/code-server
+      # --- Mounts For Git Persistence ---
+      - ${BASE_PATH}/vscode/ssh:/root/.ssh
+      - ${BASE_PATH}/vscode/.gitconfig:/root/.gitconfig
+      # --- Projects ---  
+      - ${BASE_PATH}/vscode/projects:/home/coder/project
     restart: unless-stopped
