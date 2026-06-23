@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+
+# LXC Manager: Main LXC CLI Router
+set -e
+
+COMMAND="$1"
+[ "$#" -gt 0 ] && shift
+
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# Helper function to check for lxcid
+require_lxcid() {
+    if [ -z "$1" ]; then
+        echo -e "${RED}Error: LXC ID is required for this command.${NC}" >&2
+        echo "Usage: lxc $COMMAND <lxcid>" >&2
+        exit 1
+    fi
+}
+
+# Helper to run remote scripts securely and portably
+run_remote_script() {
+    local url="$1"
+    if command -v curl &> /dev/null; then
+        bash -c "$(curl -fsSL "$url")"
+    elif command -v wget &> /dev/null; then
+        bash -c "$(wget -qLO - "$url")"
+    else
+        echo -e "${RED}Error: Neither curl nor wget is installed. Cannot fetch script.${NC}" >&2
+        exit 1
+    fi
+}
+
+case "$COMMAND" in
+    add)
+        ADD_TARGET="$1"
+        case "$ADD_TARGET" in
+            docker)
+                echo -e "${BLUE}Adding Docker LXC Container...${NC}"
+                run_remote_script "https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/docker.sh"
+                ;;
+            debian)
+                echo -e "${BLUE}Adding Debian LXC Container...${NC}"
+                run_remote_script "https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/debian.sh"
+                ;;
+            *)
+                if [ -z "$ADD_TARGET" ]; then
+                    echo -e "${RED}Error: Please specify what to add (e.g., 'docker', 'debian').${NC}" >&2
+                else
+                    echo -e "${RED}Error: Unsupported application/container type: $ADD_TARGET${NC}" >&2
+                fi
+                echo "Please refer to https://community-scripts.org/scripts for all available scripts." >&2
+                exit 1
+                ;;
+        esac
+        ;;
+    update)
+        echo -e "${BLUE}Running LXC Update Script...${NC}"
+        run_remote_script "https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/update-lxcs.sh"
+        ;;
+    clean)
+        echo -e "${BLUE}Running LXC Cleaner Script...${NC}"
+        run_remote_script "https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/clean-lxcs.sh"
+        ;;
+    trim)
+        echo -e "${BLUE}Running LXC Filesystem Trim Script...${NC}"
+        run_remote_script "https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/fstrim.sh"
+        ;;
+    edit)
+        require_lxcid "$1"
+        nano "/etc/pve/lxc/$1.conf"
+        ;;
+    start)
+        require_lxcid "$1"
+        pct start "$1"
+        ;;
+    stop)
+        require_lxcid "$1"
+        pct shutdown "$1"
+        ;;
+    *)
+        echo -e "${BLUE}LXC Manager CLI${NC}"
+        echo "Usage: lxc <command> [arguments]"
+        echo ""
+        echo "Available commands:"
+        echo "  add <type>   - Add new LXC container (e.g., docker, debian)"
+        echo "  update       - Update LXC containers (OS packages only)"
+        echo "  clean        - Clean LXC containers (logs, cache, etc.)"
+        echo "  trim         - Trim LXC filesystems (SSD / Thin Provisioned only)"
+        echo "  edit <id>    - Edit LXC configuration in nano"
+        echo "  start <id>   - Start LXC container"
+        echo "  stop <id>    - Gracefully stop/shutdown LXC container"
+        echo ""
+        if [ -n "$COMMAND" ]; then
+            echo -e "${RED}Unknown command: $COMMAND${NC}"
+            exit 1
+        fi
+        exit 0
+        ;;
+esac
