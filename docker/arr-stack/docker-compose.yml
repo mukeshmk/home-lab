@@ -19,6 +19,7 @@ services:
       - 7878:7878 # radarr
       - 8787:8787 # readarr
       - 6767:6767 # bazarr
+      - 8686:8686 # lidarr
     volumes:
       - ${BASE_PATH}/gluetun:/gluetun
     environment:
@@ -171,6 +172,23 @@ services:
       - ${DOWNLOADS_PATH}:/downloads
       - ${EBOOKS_PATH}:/ebooks
       - ${AUDIO_BOOKS_PATH}:/audiobooks
+    depends_on:
+      prowlarr:
+        condition: service_started
+    network_mode: service:gluetun
+    restart: unless-stopped
+  
+  lidarr:
+    container_name: lidarr
+    image: lscr.io/linuxserver/lidarr:latest
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Dublin}
+    volumes:
+      - ${BASE_PATH}/lidarr/config:/config
+      - ${DOWNLOADS_PATH}:/downloads
+      - ${MUSIC_PATH}:/music
     depends_on:
       prowlarr:
         condition: service_started
