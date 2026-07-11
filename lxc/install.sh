@@ -9,7 +9,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 INSTALL_DIR="$HOME/.local/bin"
-REPO_RAW_URL="https://raw.githubusercontent.com/mukeshmk/home-lab/main/lxc"
+REPO_RAW_URL="https://raw.githubusercontent.com/mukeshmk/home-lab/main"
 
 # Detect if we are running from a local clone or remotely via curl
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd 2>/dev/null || pwd)"
