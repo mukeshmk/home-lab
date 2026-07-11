@@ -79,6 +79,17 @@ case "$COMMAND" in
         require_lxcid "$1"
         pct shutdown "$1"
         ;;
+    restart)
+        require_lxcid "$1"
+        if [ "$2" = "--force" ] || [ "$2" = "-f" ]; then
+            echo -e "${BLUE}Forcefully restarting LXC container $1...${NC}"
+            pct stop "$1" --kill
+            pct start "$1"
+        else
+            echo -e "${BLUE}Restarting LXC container $1...${NC}"
+            pct reboot "$1"
+        fi
+        ;;
     *)
         echo -e "${BLUE}LXC Manager CLI${NC}"
         echo "Usage: lxc <command> [arguments]"
@@ -91,6 +102,7 @@ case "$COMMAND" in
         echo "  edit <id>    - Edit LXC configuration in nano"
         echo "  start <id>   - Start LXC container"
         echo "  stop <id>    - Gracefully stop/shutdown LXC container"
+        echo "  restart <id> [--force] - Restart LXC container"
         echo ""
         if [ -n "$COMMAND" ]; then
             echo -e "${RED}Unknown command: $COMMAND${NC}"

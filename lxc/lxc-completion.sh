@@ -7,7 +7,7 @@ _lxc_completion() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="add update clean trim edit start stop"
+    opts="add update clean trim edit start stop restart"
 
     if [[ ${COMP_CWORD} -eq 1 ]] ; then
         COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -20,7 +20,7 @@ _lxc_completion() {
             COMPREPLY=( $(compgen -W "${add_opts}" -- "${cur}") )
             return 0
             ;;
-        edit|start|stop)
+        edit|start|stop|restart)
             local lxc_ids=""
             if [ -d "/etc/pve/lxc" ]; then
                 # Get LXC IDs from the config files in /etc/pve/lxc/

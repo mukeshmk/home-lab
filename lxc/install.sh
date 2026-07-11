@@ -26,13 +26,13 @@ fi
 
 # Helper to fetch files (local or remote)
 fetch_file() {
-    local src_path="$1"
+    local src_name="$1"
     local dest_path="$2"
 
     if [ "$IS_REMOTE" = true ]; then
-        curl -fsSL "$REPO_RAW_URL/$src_path" -o "$dest_path"
+        curl -fsSL "$REPO_RAW_URL/lxc/$src_name" -o "$dest_path"
     else
-        cp "$SCRIPT_DIR/$src_path" "$dest_path"
+        cp "$SCRIPT_DIR/$src_name" "$dest_path"
     fi
 }
 
